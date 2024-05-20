@@ -17,7 +17,7 @@ Enemy::Enemy(QGraphicsItem *parent)
     // connect timer to move_forward
     QTimer * timer = new QTimer(this);
     connect(timer,SIGNAL(timeout()),this,SLOT(move_forward()));
-    timer->start(100);
+    timer->start(150);
 }
 
 void Enemy::rotateToPoint(QPointF p)
@@ -31,6 +31,9 @@ void Enemy::move_forward(){
     QLineF ln(pos(),dest);
     if(ln.length() < 5){
         point_index++;
+        if(point_index >= points.size()){
+            return;
+        }
         dest = points[point_index];
         rotateToPoint(dest);
     }

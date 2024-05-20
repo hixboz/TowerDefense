@@ -38,6 +38,7 @@ Tower::Tower(QGraphicsItem *parent):QObject(), QGraphicsPixmapItem(parent)
 
     //create QGraphicsPolygonItem
     attack_area = new QGraphicsPolygonItem(polygon,this);
+    attack_area->setPen(QPen(Qt::DotLine));
 
     //move the polygon
     QPointF poly_center(1.65,1.65);
@@ -49,14 +50,20 @@ Tower::Tower(QGraphicsItem *parent):QObject(), QGraphicsPixmapItem(parent)
 
     // connect a timer to attack target
     QTimer *timer = new QTimer();
-    connect(timer, SIGNAL(timeout()), this, SLOT(attack_target()));
+    connect(timer, SIGNAL(timeout()), this, SLOT(acquire_target()));
     timer->start(1000);
 
     // set attack destination
     attack_dest = QPointF(800,0);
 }
 
-void Tower::attack_target()
+double Tower::distanceTo(QGraphicsItem *item)
+{
+    QLineF ln(pos(),item->pos());
+    return ln.length();
+}
+
+void Tower::fire()
 {
     Bullet *bullet = new Bullet();
     bullet->setPos(x()+44, y()+44);
@@ -66,5 +73,34 @@ void Tower::attack_target()
 
     bullet->setRotation(angle);
     game->scene->addItem(bullet);
+
+}
+
+void Tower::acquire_target()
+{
+    //Get a list of all items colliding with attack area
+    QList<QGraphicsItem *> colliding_items = attack_area->collidingItems();
+
+    if(colliding_items.size() == 1){
+        has_target = false;
+        return;
+    }
+
+    double closest_distance = 300;
+    QPointF closest_point = QPointF(0,0);
+    for(size_t i=0, n=colliding_items.size(); i<n; i++){
+        Enemy *enemy = dynamic_cast<Enemy *>(colliding_items[i]);
+        if(enemy){
+            double this_dist = distanceTo(enemy);
+            if (this_dist < closest_distance){
+                closest_distance = this_dist;
+                closest_point = colliding_items[i]->pos();
+                has_target = true;
+            }
+        }
+    }
+
+    attack_dest = closest_point;
+    fire();
 
 }
