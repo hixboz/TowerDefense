@@ -4,6 +4,9 @@
 #include <Bullet.h>
 #include <QGraphicsScene>
 #include "Enemy.h"
+#include <QPixmap>
+#include <QMouseEvent>
+#include <QGraphicsPixmapItem>
 
 Game::Game(): QGraphicsView()
 {
@@ -20,6 +23,10 @@ Game::Game(): QGraphicsView()
 
     //add the tower to the scene
     scene->addItem(t);
+    
+    //set cursor
+    cursor = nullptr;
+    setMouseTracking(true);
 
     setFixedSize(800,600);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -29,7 +36,30 @@ Game::Game(): QGraphicsView()
     Enemy *enemy = new Enemy();
     scene->addItem(enemy);
 
+    // test code
+    setCursor(":images/tower.png");
+
 }
+
+void Game::setCursor(QString filename)
+{
+    if(cursor){
+        scene->removeItem(cursor);
+        delete cursor;
+    }
+    cursor = new QGraphicsPixmapItem();
+    cursor->setPixmap(QPixmap(filename));
+    scene->addItem(cursor);
+}
+
+void Game::mouseMoveEvent(QMouseEvent *event)
+{
+    if(cursor){
+        cursor->setPos(event->pos());
+    }
+}
+
+
 
 void Game::mousePressEvent(QMouseEvent *event)
 {
